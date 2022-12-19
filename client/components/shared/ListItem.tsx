@@ -1,19 +1,14 @@
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { DeleteOutline, DriveFileRenameOutline, FileCopy, MoreVert } from '@mui/icons-material';
 import { Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip } from '@mui/material';
 import { ListItem as ListItemType } from '@reactive-resume/schema';
 import clsx from 'clsx';
 import isFunction from 'lodash/isFunction';
 import { useTranslation } from 'next-i18next';
-import React, { useRef, useState } from 'react';
-import { DropTargetMonitor, useDrag, useDrop, XYCoord } from 'react-dnd';
+import React, { useState } from 'react';
 
 import styles from './ListItem.module.scss';
-
-interface DragItem {
-  id: string;
-  type: string;
-  index: number;
-}
 
 type Props = {
   item: ListItemType;
@@ -21,62 +16,19 @@ type Props = {
   index: number;
   title: string;
   subtitle?: string;
-  onMove?: (dragIndex: number, hoverIndex: number) => void;
   onEdit?: (item: ListItemType) => void;
   onDelete?: (item: ListItemType) => void;
   onDuplicate?: (item: ListItemType) => void;
 };
 
-const ListItem: React.FC<Props> = ({ item, path, index, title, subtitle, onMove, onEdit, onDelete, onDuplicate }) => {
+const ListItem: React.FC<Props> = ({ item, path, index, title, subtitle, onEdit, onDelete, onDuplicate }) => {
   const { t } = useTranslation();
 
-  const ref = useRef<HTMLDivElement>(null);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
 
-  const [{ handlerId }, drop] = useDrop<DragItem, any, any>({
-    accept: path,
-    collect(monitor) {
-      return { handlerId: monitor.getHandlerId() };
-    },
-    hover(item: DragItem, monitor: DropTargetMonitor) {
-      if (!ref.current) {
-        return;
-      }
-      const dragIndex = item.index;
-      const hoverIndex = index;
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id! });
 
-      if (dragIndex === hoverIndex) {
-        return;
-      }
-
-      const hoverBoundingRect = ref.current?.getBoundingClientRect();
-      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-      const clientOffset = monitor.getClientOffset();
-      const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
-
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
-        return;
-      }
-
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
-        return;
-      }
-
-      isFunction(onMove) && onMove(dragIndex, hoverIndex);
-
-      item.index = hoverIndex;
-    },
-  });
-
-  const [{ isDragging }, drag] = useDrag({
-    type: path,
-    item: () => {
-      return { id: item.id, index };
-    },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
+  const itemStyle: React.CSSProperties = { transform: CSS.Transform.toString(transform), transition };
 
   const handleOpen = (event: React.MouseEvent<Element>) => {
     setAnchorEl(event.currentTarget);
@@ -101,16 +53,8 @@ const ListItem: React.FC<Props> = ({ item, path, index, title, subtitle, onMove,
     handleClose();
   };
 
-  drag(drop(ref));
-
   return (
-    <div
-      ref={ref}
-      data-handler-id={handlerId}
-      className={clsx(styles.item, {
-        ['opacity-25']: isDragging,
-      })}
-    >
+    <div ref={setNodeRef} className={clsx(styles.item)} style={itemStyle} {...attributes} {...listeners}>
       <div className={styles.meta}>
         <h1 className={styles.title}>{title}</h1>
         <h2 className={styles.subtitle}>{subtitle}</h2>

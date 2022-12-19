@@ -2,7 +2,7 @@ import { DateRange } from './atoms';
 import { Profile } from './basics';
 
 export type WorkExperience = {
-  id?: string;
+  id: string;
   name: string;
   position: string;
   date?: DateRange;
@@ -11,7 +11,7 @@ export type WorkExperience = {
 };
 
 export type Education = {
-  id?: string;
+  id: string;
   institution: string;
   degree: string;
   area?: string;
@@ -23,7 +23,7 @@ export type Education = {
 };
 
 export type Award = {
-  id?: string;
+  id: string;
   title: string;
   awarder: string;
   date?: string;
@@ -32,7 +32,7 @@ export type Award = {
 };
 
 export type Certificate = {
-  id?: string;
+  id: string;
   name: string;
   issuer: string;
   date?: string;
@@ -41,7 +41,7 @@ export type Certificate = {
 };
 
 export type Volunteer = {
-  id?: string;
+  id: string;
   organization: string;
   position: string;
   date?: DateRange;
@@ -50,7 +50,7 @@ export type Volunteer = {
 };
 
 export type Publication = {
-  id?: string;
+  id: string;
   name: string;
   publisher: string;
   date?: string;
@@ -59,7 +59,7 @@ export type Publication = {
 };
 
 export type Skill = {
-  id?: string;
+  id: string;
   name: string;
   level?: string;
   levelNum: number;
@@ -67,20 +67,20 @@ export type Skill = {
 };
 
 export type Language = {
-  id?: string;
+  id: string;
   name: string;
   level: string;
   levelNum: number;
 };
 
 export type Interest = {
-  id?: string;
+  id: string;
   name: string;
   keywords?: string[];
 };
 
 export type Project = {
-  id?: string;
+  id: string;
   name: string;
   description: string;
   date?: DateRange;
@@ -90,7 +90,7 @@ export type Project = {
 };
 
 export type Reference = {
-  id?: string;
+  id: string;
   name: string;
   relationship: string;
   phone?: string;
@@ -99,7 +99,7 @@ export type Reference = {
 };
 
 export type Custom = {
-  id?: string;
+  id: string;
   title: string;
   subtitle?: string;
   date?: DateRange;
@@ -145,7 +145,7 @@ export type SectionType =
 export type SectionPath = `sections.${string}`;
 
 export type Section = {
-  id?: string;
+  id: string;
   name: string;
   type: SectionType;
   columns: number;

@@ -7,7 +7,7 @@ export type Location = {
 };
 
 export type Profile = {
-  id?: string;
+  id: string;
   network: string;
   username: string;
   url?: string;

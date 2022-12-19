@@ -353,6 +353,7 @@ const sampleData: Partial<Resume> = {
       visible: true,
     },
     '2d47a563-d0a0-4275-af18-fea3ba6b57b4': {
+      id: '2d47a563-d0a0-4275-af18-fea3ba6b57b4',
       name: 'Soft Skills',
       type: 'custom',
       items: [

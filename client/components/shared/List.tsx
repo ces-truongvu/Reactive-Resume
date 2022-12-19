@@ -1,3 +1,14 @@
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  MouseSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ListItem as ListItemType } from '@reactive-resume/schema';
 import clsx from 'clsx';
 import get from 'lodash/get';
@@ -5,9 +16,6 @@ import isArray from 'lodash/isArray';
 import isEmpty from 'lodash/isEmpty';
 import isFunction from 'lodash/isFunction';
 import { useTranslation } from 'next-i18next';
-import { useCallback } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { deleteItem, setResumeState } from '@/store/resume/resumeSlice';
@@ -36,7 +44,9 @@ const List: React.FC<Props> = ({
 
   const dispatch = useAppDispatch();
 
-  const list: Array<ListItemType> = useAppSelector((state) => get(state.resume.present, path, []));
+  const list: ListItemType[] = useAppSelector((state) => get(state.resume.present, path, []));
+
+  const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor), useSensor(PointerSensor));
 
   const handleEdit = (item: ListItemType) => {
     isFunction(onEdit) && onEdit(item);
@@ -50,46 +60,46 @@ const List: React.FC<Props> = ({
     dispatch(deleteItem({ path, value: item }));
   };
 
-  const handleMove = useCallback(
-    (dragIndex: number, hoverIndex: number) => {
-      const dragItem = list[dragIndex];
-      const newList = [...list];
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-      newList.splice(dragIndex, 1);
-      newList.splice(hoverIndex, 0, dragItem);
+    if (over && active.id !== over.id) {
+      const oldIndex = list.findIndex((item) => item.id === active.id);
+      const newIndex = list.findIndex((item) => item.id === over.id);
+      const newList = arrayMove(list, oldIndex, newIndex);
 
       dispatch(setResumeState({ path, value: newList }));
-    },
-    [list, dispatch, path]
-  );
+    }
+  };
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
       <div className={clsx(styles.container, className)}>
         {isEmpty(list) && <div className={styles.empty}>{t<string>('builder.common.list.empty-text')}</div>}
 
-        {list.map((item, index) => {
-          const title = get(item, titleKey, '');
-          const subtitleObj = get(item, subtitleKey);
-          const subtitle: string = isArray(subtitleObj) ? subtitleObj.join(', ') : subtitleObj;
+        <SortableContext items={list} strategy={verticalListSortingStrategy}>
+          {list.map((item, index) => {
+            const title = get(item, titleKey, '');
+            const subtitleObj = get(item, subtitleKey);
+            const subtitle: string = isArray(subtitleObj) ? subtitleObj.join(', ') : subtitleObj;
 
-          return (
-            <ListItem
-              key={item.id}
-              path={path}
-              item={item}
-              index={index}
-              title={title}
-              subtitle={subtitle}
-              onMove={handleMove}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onDuplicate={handleDuplicate}
-            />
-          );
-        })}
+            return (
+              <ListItem
+                key={item.id}
+                path={path}
+                item={item}
+                index={index}
+                title={title}
+                subtitle={subtitle}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onDuplicate={handleDuplicate}
+              />
+            );
+          })}
+        </SortableContext>
       </div>
-    </DndProvider>
+    </DndContext>
   );
 };
 
